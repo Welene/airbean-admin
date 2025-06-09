@@ -28,10 +28,10 @@ app.use('/api/cart', cart);
 //DB Emit events
 database.on('error', (error) => console.log(error));
 database.once('connected', () => {
-	console.log('DB connected');
+	console.log('Database is now connected');
 	//Startar servern
 	app.listen(PORT, () => {
-		console.log(`Server is running on port ${PORT}`);
+		console.log(`Server is running on ${PORT}`);
 	});
 });
 
