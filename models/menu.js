@@ -7,7 +7,7 @@ const menuSchema = new Schema(
 		prodId: {
 			type: String,
 			unique: true,
-			required: true,
+			// required: true,
 		},
 		title: {
 			type: String,

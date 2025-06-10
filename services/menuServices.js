@@ -1,22 +1,29 @@
 import Menu from '../models/menu.js';
-import { v4 as uuidv4 } from 'uuid';
 
-export async function addMenuItem() {
-	const menu = await Menu.findOne();
+export async function getAllMenuItems() {
+	return await Menu.find();
+}
 
-	if (!menu) {
-		const error = new Error('could not find any menu - your fault!');
-		error.status = 404;
-		throw error;
-	}
-
+export async function addMenuItem(title, desc, price) {
 	const newMenuItem = new Menu({
-		adminId: 'order-' + uuidv4().slice(0, 5),
-		products: products.title,
-		products: products.desc,
-		products: products.price,
-		// Vid POST-anrop måste man specifikt säga vad som ska finnas med i menyn.
-		// Det finns redan en blueprint (Schema), men vid POST måste man ändå
-		// säga till koden att "det här måste du faktiskt ha med".
+		title: title,
+		desc: desc,
+		price: price,
 	});
+	await newMenuItem.save();
+	return newMenuItem;
+}
+
+export async function updateMenuItem(id, { title, desc, price }) {
+	const updatedMenuItem = await Menu.findByIdAndUpdate(
+		id,
+		{ title, desc, price },
+		{ new: true, runValidators: true }
+	);
+	return updatedMenuItem;
+}
+
+export async function deleteMenuItem(id) {
+	const deletedMenuItem = await Menu.findByIdAndDelete(id);
+	return deletedMenuItem;
 }

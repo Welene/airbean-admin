@@ -1,18 +1,27 @@
 import { Router } from 'express';
 import Menu from '../models/menu.js';
+import validateToken from '../middleware/validateToken.js';
 import checkAdmin from '../middleware/checkIfAdmin.js';
+import {
+	addMenuItem,
+	getAllMenuItems,
+	updateMenuItem,
+	deleteMenuItem,
+} from '../services/menuServices.js';
 
 const router = Router();
 
 router.get('/menu', async (req, res, next) => {
 	try {
-		const menu = await Menu.find();
+		const menu = await getAllMenuItems();
+
 		res.status(200).json({
 			success: true,
 			message: 'This is the menu:',
 			data: menu,
 		});
 	} catch (error) {
+		console.error('Error fetching menu via service:', error);
 		next({
 			status: 500,
 			message: 'Failed to fetch menu - server error.',
@@ -25,17 +34,32 @@ router.get('/menu', async (req, res, next) => {
 // NYE ANROP TIL INDIVUELL OPPGAVE
 
 // ADD NEW ITEM TO MENU
-router.post('/menu', checkAdmin, async (req, res, next) => {
+router.post('/menu', validateToken, checkAdmin, async (req, res, next) => {
 	try {
-		let { products } = req.body;
+		const { title, desc, price } = req.body;
 
-		const menu = await Menu.findOne();
-		res.status(200).json({
+		if (!title || !desc || !price) {
+			return res.status(400).json({
+				success: false,
+				message: 'Missing title, description, or price.',
+			});
+		}
+		const newMenuItem = await addMenuItem(title, desc, price);
+
+		res.status(201).json({
 			success: true,
-			message: 'You added a new item to the menu now',
-			data: menu,
+			message: 'New menu item added successfully!',
+			data: newMenuItem,
 		});
 	} catch (error) {
+		console.error('Error adding menu item via service:', error);
+		// Sjekk for Mongoose ValidationErrors spesifikt
+		if (error.name === 'ValidationError') {
+			return res.status(400).json({
+				success: false,
+				message: 'Validation failed: ' + error.message,
+			});
+		}
 		next({
 			status: 500,
 			message: 'Failed to add to menu - server error',
@@ -44,37 +68,80 @@ router.post('/menu', checkAdmin, async (req, res, next) => {
 });
 
 // CHANGE ITEM IN MENU
-router.put('/menu/:prodId', checkAdmin, async (req, res, next) => {
-	try {
-		const menu = await Menu.find();
-		res.status(200).json({
-			success: true,
-			message: 'Item has been updated!',
-			data: menu,
-		});
-	} catch (error) {
-		next({
-			status: 500,
-			message: 'Failed to update menu - server error',
-		});
+router.put(
+	'/menu/:prodId',
+	validateToken,
+	checkAdmin,
+	async (req, res, next) => {
+		try {
+			const { prodId } = req.params;
+			const { title, desc, price } = req.body;
+
+			const updatedMenuItem = await updateMenuItem(prodId, {
+				title,
+				desc,
+				price,
+			});
+
+			if (!updatedMenuItem) {
+				return res.status(404).json({
+					success: false,
+					message: 'Could not find menu item .',
+				});
+			}
+
+			res.status(200).json({
+				success: true,
+				message: 'Menu item has been updated!',
+				data: updatedMenuItem,
+			});
+		} catch (error) {
+			console.error('Cannot update menu item:', error);
+			if (error.name === 'ValidationError') {
+				return res.status(400).json({
+					success: false,
+					message: 'Validation failed: ' + error.message,
+				});
+			}
+			next({
+				status: 500,
+				message: 'Cannot update menu - server error',
+			});
+		}
 	}
-});
+);
 
 // DELETE ITEM FROM MENU
-router.delete('/menu/:prodId', checkAdmin, async (req, res, next) => {
-	try {
-		const menu = await Menu.find();
-		res.status(200).json({
-			success: true,
-			message: 'Item has been removed from menu.',
-			data: menu,
-		});
-	} catch (error) {
-		next({
-			status: 500,
-			message: 'Failed to delete item from menu - server error',
-		});
+router.delete(
+	'/menu/:prodId',
+	validateToken,
+	checkAdmin,
+	async (req, res, next) => {
+		try {
+			const { prodId } = req.params;
+
+			const deletedMenuItem = await deleteMenuItem(prodId);
+
+			if (!deletedMenuItem) {
+				return res.status(404).json({
+					success: false,
+					message: 'Menu item could not be found.',
+				});
+			}
+
+			res.status(200).json({
+				success: true,
+				message: 'Menu item has been removed from menu.',
+				data: deletedMenuItem,
+			});
+		} catch (error) {
+			console.error('Cannot delete menu item:', error);
+			next({
+				status: 500,
+				message: 'Failed to delete item from menu - server error',
+			});
+		}
 	}
-});
+);
 
 export default router;
