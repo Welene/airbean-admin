@@ -14,17 +14,24 @@ router.post(
 	checkIfLoggedIn,
 	validateAuthBody,
 	async (req, res, next) => {
+		console.log('Auth.js route handler: req.body AT START:', req.body);
 		const { username, password, role } = req.body;
 
 		// krypterer passord FØR vi sender inn username & password
 		const hashedPassword = await bcrypt.hash(password, 10);
+
+		let newUserIdPrefix = 'user'; // default user i modellen === 'user' --> default id starts with 'user' too
+		if (role === 'admin') {
+			newUserIdPrefix = 'admin'; // changes prefix in the id if role is not 'user' (or guest...)
+		}
+		const newUserId = `${newUserIdPrefix}-${uuid().substring(0, 5)}`; // saving the prefix (user, guest, admin to a variable, that we use down below in userId)
 
 		try {
 			const result = await registerUser({
 				username,
 				password: hashedPassword, // her har vi sagt at passord er altså det samme som hashedPassword -- that's it!
 				// teste det --> registrere ny bruker --> sjekke  mongodb database collection "users" --> se at passordet er kryptert
-				userId: `user-${uuid().substring(0, 5)}`,
+				userId: newUserId,
 				role: role,
 			});
 
@@ -42,6 +49,7 @@ router.post(
 // LOGIN
 router.post('/login', validateAuthBody, async (req, res, next) => {
 	const { username, password, role } = req.body; // henter ut username & passwprd
+	console.log('validateAuthBody: req.body JUST BEFORE next():', req.body);
 
 	const user = await findUser(username);
 
