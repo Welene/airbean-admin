@@ -1,8 +1,10 @@
 import User from '../models/user.js';
 
 export async function registerUser(user) {
+	console.log('usersServices.js: Received in registerUser:', user);
 	try {
 		const result = await User.create(user);
+		console.log('usersServices.js: Created user result:', result);
 		return result;
 	} catch (error) {
 		if (error.code === 11000) {
@@ -20,6 +22,7 @@ export async function registerUser(user) {
 }
 
 export async function findUser(username) {
+	// når man logger inn, bruker man dette for å finne brukeren i databasen
 	try {
 		const user = await User.findOne({ username: username });
 		if (user) return user;

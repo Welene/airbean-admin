@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 
 const jwtSecret = 'detteerenlangstreng123veldigvanskelig456';
 
-export default function authenticateToken(req, res, next) {
+export default function validateToken(req, res, next) {
 	// fetches "Authorization" with payload from header AKA gets the token
 	const authHeader = req.headers['authorization'];
 

@@ -14,7 +14,7 @@ router.post(
 	checkIfLoggedIn,
 	validateAuthBody,
 	async (req, res, next) => {
-		const { username, password } = req.body;
+		const { username, password, role } = req.body;
 
 		// krypterer passord FØR vi sender inn username & password
 		const hashedPassword = await bcrypt.hash(password, 10);
@@ -25,6 +25,7 @@ router.post(
 				password: hashedPassword, // her har vi sagt at passord er altså det samme som hashedPassword -- that's it!
 				// teste det --> registrere ny bruker --> sjekke  mongodb database collection "users" --> se at passordet er kryptert
 				userId: `user-${uuid().substring(0, 5)}`,
+				role: role,
 			});
 
 			res.status(201).json({
@@ -40,7 +41,7 @@ router.post(
 
 // LOGIN
 router.post('/login', validateAuthBody, async (req, res, next) => {
-	const { username, password } = req.body; // henter ut username & passwprd
+	const { username, password, role } = req.body; // henter ut username & passwprd
 
 	const user = await findUser(username);
 

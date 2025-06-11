@@ -24,8 +24,6 @@ const userSchema = new Schema({
 		required: true, // alle nye brukere MÅ ha en rolle
 		enum: ['guest', 'user', 'admin'], // disse tre skal være med i header der tokenet er, de får da en av disse rollene
 		default: 'user',
-		// legg til token greier til slutt... kom tilbake til det her senere + lage middleware som sjekker om man er admin eller ikke
-		// for å bruke de tre nye POST, PUT OG DELETE anropene
 	},
 });
 
