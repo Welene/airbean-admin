@@ -13,10 +13,19 @@ export async function getAllOrders() {
 // ----------------------------------------------------------------------------------------
 
 // (GET) - RETURNS ALL ORDERS FOR THAT USER/ID
-export async function getOrdersByUser(userId) {
-	return await Order.find({ userId });
-}
+export async function getOrdersByUser(idParam) {
+	// can get both userId and guestId, any prefix + id that it in the url param
 
+	const orders = await Order.find({
+		$or: [
+			// using $or to look for orders where 'userId' or 'guestId' (from database) is matching 'idParam'
+			{ userId: idParam }, // checking if userId from database matches the idParam I write in the endpoint
+			// OR
+			{ guestId: idParam }, // cheks if  guestId from database matches the idParam I write in the endpoint
+		],
+	});
+	return orders;
+}
 // ----------------------------------------------------------------------------------------
 
 // (POST) - CREATES ORDER FOR CART(id) RECEIVED
@@ -50,6 +59,7 @@ export async function createOrderFromCart(cartId) {
 	const newOrder = new Order({
 		orderId: 'order-' + uuidv4().slice(0, 5),
 		userId: cart.userId,
+		guestId: cart.guestId,
 		cartId: cart.cartId,
 		products: cart.products,
 		total,

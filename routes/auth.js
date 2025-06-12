@@ -3,6 +3,7 @@ import { v4 as uuid } from 'uuid';
 import { findUser, registerUser } from '../services/usersServices.js';
 import { validateAuthBody } from '../middleware/validateAuthBody.js';
 import { checkIfLoggedIn } from '../middleware/checkIfLoggedIn.js';
+import optionalTokenValidation from '../middleware/optionalTokenValidation.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
@@ -11,6 +12,7 @@ const router = Router();
 // REGISTER
 router.post(
 	'/register',
+	optionalTokenValidation,
 	checkIfLoggedIn,
 	validateAuthBody,
 	async (req, res, next) => {
@@ -75,7 +77,7 @@ router.post('/login', validateAuthBody, async (req, res, next) => {
 					role: user.role,
 				}, // user.role er det jeg nettopp la til user.js MODELLEN
 				'detteerenlangstreng123veldigvanskelig456', // LEGG DEN HELLER I env FILEN SÅNN AT DEN IKKE PUSHES OPP -- men eksamen nå så den bør kanskje ligge her for now...
-				{ expiresIn: 60 * 10 } // 10 min
+				{ expiresIn: 60 * 60 } // 10 min was way too annoying!!
 			);
 			// SIGNERER en token til brukeren
 			// tar imot: 1) payload AKA data som vi skal ha i tokenet (userId, roller f.eks), 2) en hemmelig streng som vi skal bruke når man dekrypterer tokenet -

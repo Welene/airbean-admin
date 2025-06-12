@@ -1,15 +1,23 @@
 import jwt from 'jsonwebtoken';
 
-// middleware som sjekker om man har admin som rolle
-export default function checkAdmin(req, res, next) {
-	console.log(req.user);
-	if (req.user && req.user.role === 'admin') {
+// middleware som sjekker om man har admin som rolle og om man er logget inn
+export default function checkIfAdmin(req, res, next) {
+	if (!req.user) {
+		// checkIfAdmin forventer allerede at req-user er fylt ut - og her sjekkes det om den er tom/undefined først
+
+		return next({
+			status: 401,
+			message: 'User is not logged in (need authentication).',
+		});
+	}
+
+	if (req.user.role === 'admin') {
 		next();
 	} else {
-		res.status(403).json({
-			success: false,
+		return next({
+			status: 403,
 			message:
-				'YOU SHALL NOT PASS! (admin token required to get to this route)',
+				'You are authenticated (logged in) BUT you must be admin to do this',
 		});
 	}
 }
