@@ -16,7 +16,6 @@ router.post(
 	checkIfLoggedIn,
 	validateAuthBody,
 	async (req, res, next) => {
-		console.log('Auth.js route handler: req.body AT START:', req.body);
 		const { username, password, role } = req.body;
 
 		// krypterer passord FØR vi sender inn username & password
@@ -51,7 +50,6 @@ router.post(
 // LOGIN
 router.post('/login', validateAuthBody, async (req, res, next) => {
 	const { username, password, role } = req.body; // henter ut username & passwprd
-	console.log('validateAuthBody: req.body JUST BEFORE next():', req.body);
 
 	const user = await findUser(username);
 
@@ -103,7 +101,6 @@ router.post('/login', validateAuthBody, async (req, res, next) => {
 
 // LOGOUT
 router.get('/logout', (req, res) => {
-	global.user = null;
 	res.json({
 		success: true,
 		message: 'User logged out successfully',
