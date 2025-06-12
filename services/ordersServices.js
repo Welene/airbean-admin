@@ -1,3 +1,5 @@
+// src/services/ordersServices.js
+
 import Order from '../models/order.js';
 import Cart from '../models/cart.js';
 import Menu from '../models/menu.js';
@@ -14,43 +16,68 @@ export async function getAllOrders() {
 
 // (GET) - RETURNS ALL ORDERS FOR THAT USER/ID
 export async function getOrdersByUser(idParam) {
-	// can get both userId and guestId, any prefix + id that it in the url param
-
-	const orders = await Order.find({
+	// Denne funksjonen kan hente ordrer for både userId og guestId.
+	// Den bruker $or for å søke etter ordrer der 'userId' ELLER 'guestId' i databasen matcher 'idParam'.
+	console.log(
+		'getOrdersByUser: Forsøker å hente ordrer for ID (idParam):',
+		idParam
+	);
+	const query = {
 		$or: [
-			// using $or to look for orders where 'userId' or 'guestId' (from database) is matching 'idParam'
-			{ userId: idParam }, // checking if userId from database matches the idParam I write in the endpoint
-			// OR
-			{ guestId: idParam }, // cheks if  guestId from database matches the idParam I write in the endpoint
+			{ userId: idParam }, // Sjekker om ordrens userId matcher ID-en fra URL-en
+			{ guestId: idParam }, // Sjekker om ordrens guestId matcher ID-en fra URL-en
 		],
-	});
+	};
+	console.log(
+		'getOrdersByUser: Mongoose spørreobjekt:',
+		JSON.stringify(query, null, 2)
+	); // NY OG VIKTIG LOGG
+	const orders = await Order.find(query);
+	console.log('getOrdersByUser: Fant ordrer:', orders);
 	return orders;
 }
+
 // ----------------------------------------------------------------------------------------
 
 // (POST) - CREATES ORDER FOR CART(id) RECEIVED
 export async function createOrderFromCart(cartId) {
+	console.log('createOrderFromCart: Startet for cartId:', cartId);
 	const cart = await Cart.findOne({ cartId });
 
 	if (!cart) {
+		console.error(
+			'createOrderFromCart: Handlevogn ikke funnet for cartId:',
+			cartId
+		);
 		const error = new Error('could not find cart');
 		error.status = 404;
 		throw error;
 	}
 
-	// Fetches all prodId from cart
+	console.log(
+		'createOrderFromCart: Handlevogn funnet. Innhold:',
+		JSON.stringify(cart, null, 2)
+	);
+	console.log(
+		'createOrderFromCart: Cart userId:',
+		cart.userId,
+		'Cart guestId:',
+		cart.guestId
+	);
+
+	// Henter alle prodId fra handlevognen
 	const prodIds = cart.products.map((item) => item.prodId);
 
-	// Fetches correct products from the menu
+	// Henter korrekte produkter fra menyen
 	const menuItems = await Menu.find({ prodId: { $in: prodIds } });
 
-	// Calculate total price based on "priceMap" & qty
+	// Beregner totalpris basert på "priceMap" og antall
 	const priceMap = {};
 	menuItems.forEach((menuItem) => {
 		priceMap[menuItem.prodId] = menuItem.price;
 	});
 
-	// Calculate total price based on "priceMap" & qty
+	// Beregner totalpris basert på "priceMap" og antall
 	const total = cart.products.reduce((sum, item) => {
 		const price = priceMap[item.prodId] || 0;
 		return sum + price * item.qty;
@@ -58,17 +85,24 @@ export async function createOrderFromCart(cartId) {
 
 	const newOrder = new Order({
 		orderId: 'order-' + uuidv4().slice(0, 5),
-		userId: cart.userId,
-		guestId: cart.guestId,
+		userId: cart.userId, // Vil være null for gjester, eller bruker-ID for innloggede
+		guestId: cart.guestId, // Denne linjen sikrer at guestId fra handlekurven lagres på ordren
 		cartId: cart.cartId,
 		products: cart.products,
 		total,
-		// Vid POST-anrop måste man specifikt säga vad som ska finnas med i ordern.
-		// Det finns redan en blueprint (Schema), men vid POST måste man ändå
-		// säga till koden att "det här måste du faktiskt ha med".
 	});
 
+	console.log(
+		'createOrderFromCart: Forsøker å lagre ny ordre:',
+		JSON.stringify(newOrder, null, 2)
+	);
+
 	await newOrder.save();
+
+	console.log(
+		'createOrderFromCart: Ny ordre lagret:',
+		JSON.stringify(newOrder, null, 2)
+	);
 
 	return newOrder;
 }
