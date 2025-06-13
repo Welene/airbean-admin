@@ -1,3 +1,6 @@
+# super interesting swagger documentation!!
+
+openapi: 3.1.0
 info:
   title: Admin Airbean API
   description: API documentation for Admin Airbean API
@@ -5,15 +8,359 @@ info:
 openapi: 3.1.0
 components: 
 paths:
-  api/logout:
+  /api/logout:
     get:
-  api/login:
+      tags:
+        - API auth
+      description: This route logs the user out.
+      responses:
+        "200":
+          description: User logged out successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: User logged out successfully
+  /api/login:
     post:
-  api/register:
+      tags:
+        - API auth
+      description: This route logs the user in.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: SummerGirl123
+                password:
+                  type: string
+                  example: SnartSommarlov!
+            example:
+              username: Megatron124
+              password: Megatronloverwhateverthatmeans123
+      responses:
+        "200":
+          description: User logged in successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: User logged in successfully.
+                  token:
+                    type: string
+                    example: Bearer <token-here>
+        "400":
+          description: Incorrect username or password.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 400
+                  message:
+                    type: string
+                    example: Username or password are incorrect
+  /api/register:
     post:
-  api/menu:
+      tags:
+        - API auth
+      description: This route registers the user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: SummerGirl123
+                password:
+                  type: string
+                  example: SnartSommarlov123
+                role:
+                  type: string
+                  example: admin
+                  enum:
+                    - user
+                    - admin
+            example:
+              username: smartuser123
+              password: securepassword123
+              role: user
+      responses:
+        "201":
+          description: User registration succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: User created successfully
+                  userId:
+                    type: string
+                    example: user-xxxxx
+        "400":
+          description: Invalid input (password/username)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Username or password is missing
+        "403":
+          description: User is already logged in.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 403
+                  message:
+                    type: string
+                    example: You are already logged in.
+  /api/menu:
     post:
-  api/menu/{prodId}:
+      tags:
+        - API admin
+      description: This route lets admins post new menu items.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - desc
+                - price
+              properties:
+                title:
+                  type: string
+                  example: One Coffee Bean
+                desc:
+                  type: string
+                  example: All you need
+                price:
+                  type: number
+            example:
+              title: Vantablack Coffee
+              desc: Blackest coffee in the world.
+              price: 49
+      responses:
+        "201":
+          description: Admin added menu item
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: New menu item added successfully!
+                  data:
+                    type: object
+                    properties:
+                      title:
+                        type: string
+                        example: Only coffee menu
+                      desc:
+                        type: string
+                        example: If you see pizza further down, ignore that, I forgot we only sell coffee!
+                      price:
+                        type: number
+                        example: 99
+        "400":
+          description: Missing input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Missing title, description, or price.
+        "403":
+          description: Invalid authorization
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 403
+                  message:
+                    type: string
+                    example: Access denied – admin only
+  /api/menu/{prodId}:
     put:
-  api/menu/{prodId}:
+      tags:
+        - API admin
+      description: This route lets admins update/change menu items.
+      parameters:
+        - in: path
+          name: prodId
+          required: true
+          schema:
+            type: string
+          example: prod-xxxxx
+          description: The ID of the product to update.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Updated Coffee
+                desc:
+                  type: string
+                  example: With updated taste!
+                price:
+                  type: number
+            example:
+              title: Class Coffee
+              price: 39
+      responses:
+        "200":
+          description: Admin updated menu
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Menu item has been updated!
+                  data:
+                    type: object
+                    properties:
+                      title:
+                        type: string
+                        example: Super New pizza
+                      desc:
+                        type: string
+                        example: Super pizzas are awesome, spiced with garlic
+                      price:
+                        type: number
+                        example: 250
+        "404":
+          description: Could not find item
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Could not find menu item.
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Validation failed - Price must be a number.
     delete:
+      tags:
+        - API admin
+      description: This route lets admins delete/remove menu items.
+      parameters:
+        - in: path
+          name: prodId
+          required: true
+          schema:
+            type: string
+          example: prod-xxxxx
+          description: The ID of the product to delete.
+      responses:
+        "200":
+          description: Menu item deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Menu item has been removed from menu.
+        "404":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Menu item could not be found.
+        "403":
+          description: Not an admin
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 403
+                  message:
+                    type: string
+                    example: Access denied – admin only.

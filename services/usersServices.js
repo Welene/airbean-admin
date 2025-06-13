@@ -22,7 +22,6 @@ export async function registerUser(user) {
 }
 
 export async function findUser(username) {
-	// når man logger inn, bruker man dette for å finne brukeren i databasen
 	try {
 		const user = await User.findOne({ username: username });
 		if (user) return user;

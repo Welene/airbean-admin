@@ -40,19 +40,15 @@ export async function createOrderFromCart(cartId) {
 		throw error;
 	}
 
-	// Henter alle prodId fra handlevognen
 	const prodIds = cart.products.map((item) => item.prodId);
 
-	// Henter korrekte produkter fra menyen
 	const menuItems = await Menu.find({ prodId: { $in: prodIds } });
 
-	// Beregner totalpris basert på "priceMap" og antall
 	const priceMap = {};
 	menuItems.forEach((menuItem) => {
 		priceMap[menuItem.prodId] = menuItem.price;
 	});
 
-	// Beregner totalpris basert på "priceMap" og antall
 	const total = cart.products.reduce((sum, item) => {
 		const price = priceMap[item.prodId] || 0;
 		return sum + price * item.qty;
@@ -60,8 +56,8 @@ export async function createOrderFromCart(cartId) {
 
 	const newOrder = new Order({
 		orderId: 'order-' + uuidv4().slice(0, 5),
-		userId: cart.userId, // Vil være null for gjester, eller bruker-ID for innloggede
-		guestId: cart.guestId, // Denne linjen sikrer at guestId fra handlekurven lagres på ordren
+		userId: cart.userId,
+		guestId: cart.guestId,
 		cartId: cart.cartId,
 		products: cart.products,
 		total,

@@ -29,10 +29,6 @@ router.get('/menu', async (req, res, next) => {
 	}
 });
 
-// ---------------------------------------------------------------------------------------------------------------
-
-// NYE ANROP TIL INDIVUELL OPPGAVE
-
 // ADD NEW ITEM TO MENU
 router.post('/menu', validateToken, checkAdmin, async (req, res, next) => {
 	try {

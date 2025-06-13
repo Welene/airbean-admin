@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 // function/script that generates ONE hased password for my ONE admin user
 // put all that shait manually into mongodb into the collection: users - now there is an admin user voilá !
+// EDIT: only needed in the beginning not anymore but I'll keep it anyway because why not
 
 const adminPassword = 'Iamthebestadminever123';
 
